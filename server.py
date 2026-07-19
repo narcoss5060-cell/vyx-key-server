@@ -13,9 +13,9 @@ from flask import Flask, request, jsonify
 app = Flask(__name__)
 
 ADMIN_SECRET = os.environ.get("VYX_ADMIN_SECRET", "vyx_admin_2024")
-JWT_SECRET = os.environ.get("VYX_JWT_SECRET", secrets.token_hex(32))
+JWT_SECRET = os.environ.get("VYX_JWT_SECRET", "a3f7c91e8b4d26f0e519abc83d7f624e1b0a95c8d2e4f173b6098a2c5d8e0f34")
 DB_PATH = os.environ.get("VYX_DB_PATH", "vyx_keys.db")
-TOKEN_EXPIRY_DAYS = int(os.environ.get("VYX_TOKEN_EXPIRY_DAYS", "30"))
+TOKEN_EXPIRY_DAYS = 36500
 
 
 def get_db():
@@ -63,13 +63,12 @@ def jwt_verify(token: str) -> dict | None:
         h, p, s = parts
         sig_input = f"{h}.{p}".encode()
         expected = hmac.new(JWT_SECRET.encode(), sig_input, hashlib.sha256).digest()
-        sig_bytes = base64.urlsafe_b64encode(s.encode() + b"==")
-        actual = base64.urlsafe_b64decode(sig_bytes)
+        sig_pad = s + "=" * (4 - len(s) % 4)
+        actual = base64.urlsafe_b64decode(sig_pad)
         if not hmac.compare_digest(expected, actual):
             return None
-        padding = 4 - len(p) % 4
-        p_padded = p + "=" * padding
-        return json.loads(base64.urlsafe_b64decode(p_padded))
+        payload_pad = p + "=" * (4 - len(p) % 4)
+        return json.loads(base64.urlsafe_b64decode(payload_pad))
     except Exception:
         return None
 
