@@ -218,8 +218,9 @@ def health():
     return jsonify({"status": "ok"})
 
 
+init_db()
+
 if __name__ == "__main__":
-    init_db()
     print(f"[VyX] server starting on port 5000")
     print(f"[VyX] admin secret: {ADMIN_SECRET}")
     app.run(host="0.0.0.0", port=5000, debug=False)
